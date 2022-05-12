@@ -1,5 +1,4 @@
 from dash import Dash, dcc, html, Input, Output
-import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
 
@@ -14,7 +13,7 @@ fig = px.density_mapbox(df, lat='lat', lon='long', radius=10,
                         center=dict(lat=0, lon=180), zoom=0,
                         mapbox_style="stamen-terrain")
 
-my_graph = dcc.Graph(figure=fig)
+my_graph = dcc.Graph(figure=fig, style={'height': '100vh'})
 
 app.layout = html.Div([my_graph])
 
