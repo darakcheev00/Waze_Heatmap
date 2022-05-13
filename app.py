@@ -17,18 +17,18 @@ df = pd.read_csv(log_file_path, header = 0, names = ['date', 'lat', 'long'], par
 df = df[["lat","long"]]
 
 fig = px.density_mapbox(df, lat='lat', lon='long', radius=10,
-                        center=dict(lat=0, lon=180), zoom=0,
+                        center=dict(lat=43.68, lon=-79.42), zoom=8,
                         mapbox_style="open-street-map")
 
 my_graph = dcc.Graph(figure=fig, style={'height': '100vh'})
-
+#Police and Accident Hotspots
 app.layout = html.Div(
                 children=[
                     html.Div(
                         children=[
                             html.P(children="🚨🚔🚨", className="header-emoji"),
                             html.H1(
-                                children="Police and Accident Hotspots", className="header-title"
+                                children="-___-", className="header-title"
                             ),
                             html.P(
                                 children="Analyze the behavior de popo",
@@ -37,23 +37,35 @@ app.layout = html.Div(
                         ],
                         className="header",
                     ),
-                    # children=[
-                    #         html.Div(children="Time", className="menu-title"),
-                    #         dcc.Dropdown(
-                    #             id="time-filter",
-                    #             options=[
-                    #                 {"label": hour, "value": hour}
-                    #                 for hour in range(0,24)
-                    #             ],
-                    #             value="Year",
-                    #             clearable=False,
-                    #             className="dropdown",
-                    #         )
+                    html.Div(
+                        children=[
+                            html.Div(children="Time (hour of day)", className="menu-title"),
+                            dcc.Dropdown(
+                                id="time-filter",
+                                options=[
+                                    {"label": hour, "value": hour}
+                                    for hour in range(0,24)
+                                ],
+                                value="Year",
+                                clearable=False,
+                                className="dropdown",
+                            )
                         
-                    # ],
-                    my_graph
+                        ],
+                        className="menu",
+                    ),
+                    html.Div(
+                        my_graph,
+                    )
+                    
                 ]
             )
+
+
+# @app.callback(
+#     [Output("price-chart", "figure")],
+#     [Input("time-filter", "value")],
+# )
 
 if __name__ == '__main__':
     app.run_server(debug=True)
