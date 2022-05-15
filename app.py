@@ -77,11 +77,9 @@ def update_map(time, curr_graph: dcc.Graph):
     if isinstance(time, int):
         start_time = datetime.time(hour=time)
         if time+1 == 24:
-            print("edge")
             end_time = datetime.time(hour=23, minute=59)
         else:
             end_time = datetime.time(hour=time+1)
-        print("end_time", end_time)
         mask = ((df.time > start_time) & (df.time < end_time))
 
         df_filtered = df.loc[mask, :]
