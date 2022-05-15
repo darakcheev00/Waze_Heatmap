@@ -1,4 +1,4 @@
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, Input, Output, no_update
 import plotly.express as px
 import pandas as pd
 import numpy as np
@@ -21,6 +21,8 @@ df['time'] = pd.to_datetime(df['date']).dt.time
 fig = px.density_mapbox(df, lat='lat', lon='long', radius=10,
                         center=dict(lat=43.68, lon=-79.42), zoom=8,
                         mapbox_style="open-street-map")
+
+
 
 my_graph = dcc.Graph(id='heatmap', figure=fig, style={'height': '100vh'})
 #Police and Accident Hotspots
@@ -48,7 +50,7 @@ app.layout = html.Div(
                                     {"label": hour, "value": hour}
                                     for hour in range(0,24)
                                 ],
-                                value="Year",
+                                value=9,
                                 clearable=False,
                                 className="dropdown",
                             )
@@ -65,22 +67,27 @@ app.layout = html.Div(
 
 #THA GARBAGE IS IN THE OUTPUT
 @app.callback(
-    [Output("heatmap", "plotly.graph_objs._figure.Figure")],
-    [Input("time-filter", "value")]
+    [Output("heatmap", "figure")],
+    [Input("time-filter", "value")],
+    prevent_initial_callbacks=True
 )
-
 def update_map(time):
-    start_time = datetime.time(hour=time)
-    end_time = datetime.time(hour=time+1)
+    print("time", time)
+    print("time type", type(time))
+    if isinstance(time, int):
+        start_time = datetime.time(hour=time)
+        end_time = datetime.time(hour=(time+1)%24)
 
-    mask = ((df.time > start_time) & (df.time < end_time))
+        mask = ((df.time > start_time) & (df.time < end_time))
 
-    df_filtered = df.loc[mask, :]
-    heat_map_figure = px.density_mapbox(df_filtered, lat='lat', lon='long', radius=10,
-                        center=dict(lat=43.68, lon=-79.42), zoom=8,
-                        mapbox_style="open-street-map")
+        df_filtered = df.loc[mask, :]
+        heat_map_figure = px.density_mapbox(df_filtered, lat='lat', lon='long', radius=10,
+                            center=dict(lat=43.68, lon=-79.42), zoom=8,
+                            mapbox_style="open-street-map")
 
-    return heat_map_figure
+        return [heat_map_figure]
+    
+    return no_update
 
 if __name__ == '__main__':
     app.run_server(debug=True)
