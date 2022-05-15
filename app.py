@@ -1,4 +1,4 @@
-from dash import Dash, dcc, html, Input, Output, no_update
+from dash import Dash, dcc, html, Input, Output, State, no_update
 import plotly.express as px
 import pandas as pd
 import numpy as np
@@ -12,6 +12,7 @@ external_stylesheets = [
     },
 ]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
 app.title = "Police and Accident Hotspots"
 
 log_file_path = 'f12log.csv'
@@ -47,7 +48,7 @@ app.layout = html.Div(
                             dcc.Dropdown(
                                 id="time-filter",
                                 options=[
-                                    {"label": hour, "value": hour}
+                                    {"label": str(hour)+":00", "value": hour}
                                     for hour in range(0,24)
                                 ],
                                 value=9,
@@ -69,20 +70,25 @@ app.layout = html.Div(
 @app.callback(
     [Output("heatmap", "figure")],
     [Input("time-filter", "value")],
+    [State("heatmap", "figure")],
     prevent_initial_callbacks=True
 )
-def update_map(time):
-    print("time", time)
-    print("time type", type(time))
+def update_map(time, curr_graph: dcc.Graph):
     if isinstance(time, int):
         start_time = datetime.time(hour=time)
-        end_time = datetime.time(hour=(time+1)%24)
-
+        if time+1 == 24:
+            print("edge")
+            end_time = datetime.time(hour=23, minute=59)
+        else:
+            end_time = datetime.time(hour=time+1)
+        print("end_time", end_time)
         mask = ((df.time > start_time) & (df.time < end_time))
 
         df_filtered = df.loc[mask, :]
+        curr_center = curr_graph['layout']['mapbox']['center']
+        curr_zoom = curr_graph['layout']['mapbox']['zoom']
         heat_map_figure = px.density_mapbox(df_filtered, lat='lat', lon='long', radius=10,
-                            center=dict(lat=43.68, lon=-79.42), zoom=8,
+                            center=curr_center, zoom=curr_zoom,
                             mapbox_style="open-street-map")
 
         return [heat_map_figure]
